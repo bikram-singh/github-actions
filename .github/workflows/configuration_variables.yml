@@ -15,7 +15,7 @@ jobs:
       - name: "Say Hello to Vishal"
         run: echo "$Greeting $First_Name is using $cloud with project ${{ vars.PROJECT_ID }}!"
         env:
-          First_Name: Vishal
+          First_Name: Bikram
 
 
 # In this example what we using one workflow variable "cloud: google-cloud" 
