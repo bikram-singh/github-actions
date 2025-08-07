@@ -6,7 +6,6 @@ variable "bucket_name" {
 variable "bucket_location" {
   description = "Location/region for the GCS bucket"
   type        = string
-  default     = "US"
 }
 
 variable "project_id" {
