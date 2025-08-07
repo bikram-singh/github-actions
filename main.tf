@@ -1,9 +1,9 @@
 resource "google_storage_bucket" "my-bucket" {
-  name          = "github-action-demo-bucket-002"
-  location      = "US"
-  force_destroy = true
-  project       = "github-actions-111"
-  uniform_bucket_level_access = true
+  name          = var.bucket_name
+  location      = var.bucket_location
+  force_destroy = var.force_destroy
+  project       = var.project_id
+  uniform_bucket_level_access = var.uniform_bucket_level_access
 
   labels = {
     "goog-terraform-provisioned" = "true"
