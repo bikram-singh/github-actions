@@ -1,0 +1,52 @@
+name: Start and Stop GCP VM Instance
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action to perform: start or stop"
+        required: true
+        default: "start"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  manage-vm:
+    name: Manage GCP VM
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Authenticate to Google Cloud via Workload Identity Fedration
+      - name: Authenticate to Google Cloud via WIF
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: 'projects/1070327104780/locations/global/workloadIdentityPools/github-action-pool/providers/github-action'
+          service_account: 'github-wif@github-actions-111.iam.gserviceaccount.com'
+
+      # Install gcloud CLI
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      # Perform VM action
+      - name: Start or Stop VM
+        run: |
+          if [ "${{ github.event.inputs.action }}" == "start" ]; then
+            echo "Starting VM instance..."
+            gcloud compute instances start linux-vm \
+              --zone=us-central1-c \
+              --project=github-actions-111
+          elif [ "${{ github.event.inputs.action }}" == "stop" ]; then
+            echo "Stopping VM instance..."
+            gcloud compute instances stop linux-vm \
+              --zone=us-central1-c \
+              --project=github-actions-111
+          else
+            echo "Invalid action: ${{ github.event.inputs.action }}"
+            exit 1
+          fi
