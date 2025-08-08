@@ -1,3 +1,35 @@
+# This workflow starts or stops a Google Cloud VM instance from GitHub Actions.
+#
+# To configure this workflow:
+#
+# 1. Enable the following Google Cloud APIs:
+#    - Compute Engine API (compute.googleapis.com)
+#    - IAM Service Account Credentials API (iamcredentials.googleapis.com)
+#
+# 2. Create a Service Account with the required permissions:
+#    gcloud iam service-accounts create github-actions-vm \
+#      --display-name "GitHub Actions VM Controller"
+#
+# 3. Assign the following IAM roles to the service account:
+#    gcloud projects add-iam-policy-binding <PROJECT_ID> \
+#      --member="serviceAccount:github-actions-vm@<PROJECT_ID>.iam.gserviceaccount.com" \
+#      --role="roles/compute.instanceAdmin.v1"
+#
+#    gcloud projects add-iam-policy-binding <PROJECT_ID> \
+#      --member="serviceAccount:github-actions-vm@<PROJECT_ID>.iam.gserviceaccount.com" \
+#      --role="roles/iam.serviceAccountUser"
+#
+#    gcloud iam service-accounts add-iam-policy-binding \
+#      github-actions-vm@<PROJECT_ID>.iam.gserviceaccount.com \
+#      --member="principalSet://iam.googleapis.com/projects/<PROJECT_NUMBER>/locations/global/workloadIdentityPools/github-action-pool/attribute.repository/<OWNER>/<REPO>" \
+#      --role="roles/iam.serviceAccountTokenCreator"
+#
+# 4. Set up OIDC Workload Identity Federation for GitHub:
+#    Follow Google’s guide: https://cloud.google.com/iam/docs/workload-identity-federation
+#
+# 5. Update the `workload_identity_provider` and `service_account` values in this file
+#    with your own GCP configuration.
+
 name: Start and Stop GCP VM Instance
 
 on:
@@ -21,13 +53,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Authenticate to Google Cloud via Workload Identity Fedration
+      # Authenticate to Google Cloud via Workload Identity Federation
       - name: Authenticate to Google Cloud via WIF
         id: auth
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: 'projects/1070327104780/locations/global/workloadIdentityPools/github-action-pool/providers/github-action'
           service_account: 'github-wif@github-actions-111.iam.gserviceaccount.com'
+          access_token_scopes: 'https://www.googleapis.com/auth/cloud-platform'
 
       # Install gcloud CLI
       - name: Setup gcloud
